@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--suppress SqlDialectInspection -->
+<mapper namespace="com.springforum.dao.MessageMapper" >
+    <resultMap id="BaseResultMap" type="com.springforum.domain.Message" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="content" property="content" jdbcType="LONGVARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="user_id" property="user_id" jdbcType="INTEGER" />
+        <result column="reply_user_id" property="reply_user_id" jdbcType="INTEGER" />
+    </resultMap>
+    <resultMap id="MessageAndUserResultMap" type="com.springforum.domain.Message" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="content" property="content" jdbcType="LONGVARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="user_id" property="user_id" jdbcType="INTEGER" />
+        <result column="reply_user_id" property="reply_user_id" jdbcType="INTEGER" />
+        <association property="user" javaType="com.springforum.domain.User">
+            <id column="id" property="id" jdbcType="INTEGER" />
+            <result column="username" property="username" jdbcType="VARCHAR" />
+            <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+        </association>
+    </resultMap>
+    <sql id="Base_Column_List" >
+        id, content, create_time, user_id, reply_user_id
+    </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from message
+        where id = #{id, jdbcType=INTEGER}
+    </select>
+    <select id="selectById" resultMap="MessageAndUserResultMap" parameterType="java.lang.Integer">
+        select
+        message.id,  message.content, message.create_time, message.user_id,
+        user.username, user.avatar
+        from message, user
+        where (message.user_id=#{user_id, jdbcType=INTEGER} or message.reply_user_id=#{user_id, jdbcType=INTEGER}) and user.id=message.reply_user_id
+    </select>
+    <select id="selectReplyById" resultMap="MessageAndUserResultMap" parameterType="java.lang.Integer">
+        select
+        message.*, user.username, user.avatar
+        from message, user
+        where user.id = message.user_id and message.reply_user_id=#{replyUserId, jdbcType=INTEGER} ;
+    </select>
+    <select id="select" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        message.id, message.content, message.create_time, message.user_id
+        from message
+        where message.user_id=#{userId, jdbcType=INTEGER} or message.reply_user_id=#{userId, jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from message
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insert" parameterType="com.springforum.domain.Message" >
+        insert into message (content,
+          create_time, user_id, reply_user_id)
+        values (#{content, jdbcType=LONGVARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+          #{user_id,jdbcType=INTEGER}, #{reply_user_id, jdbcType=INTEGER})
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.springforum.domain.Message" >
+        update message
+        <set >
+            <if test="id != null" >
+                id = #{id, jdbcType=INTEGER},
+            </if>
+            <if test="content != null" >
+                content = #{content,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="create_time != null" >
+                create_time = #{createTime, jdbcType=TIMESTAMP},
+            </if>
+            <if test="user_id != null" >
+                user_id = #{user_id,jdbcType=INTEGER},
+            </if>
+            <if test="reply_user_id != null" >
+                reply_user_id = #{reply_user_id,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id, jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.springforum.domain.Message" >
+        update message
+        set
+        content = #{content, jdbcType=LONGVARCHAR},
+        create_time = #{create_time,jdbcType=TIMESTAMP},
+          user_id = #{user_id,jdbcType=INTEGER},
+          reply_user_id = #{reply_user_id,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>

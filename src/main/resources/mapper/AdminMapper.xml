@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.springforum.dao.AdminMapper" >
+
+    <resultMap id="RoleBaseResultMap" type="com.springforum.domain.Role" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="role" property="role" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="PermissionBaseResultMap" type="com.springforum.domain.Permission">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="permission" property="permission" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="ResourceBaseResultMap" type="com.springforum.domain.Resource">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="resource" property="resource" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Role_Base_Column_List">
+        id, role, description
+    </sql>
+
+    <sql id="Permission_Base_Column_List" >
+        id, permission, description
+    </sql>
+
+    <sql id="Resource_Base_Column_List" >
+        id, resource, description
+    </sql>
+
+    <select id="listAllRoles" resultMap="RoleBaseResultMap">
+        SELECT * FROM role
+    </select>
+
+    <select id="listAllPermissions" resultMap="PermissionBaseResultMap">
+        SELECT
+        <include refid="Permission_Base_Column_List"/>
+        FROM permission
+    </select>
+
+    <select id="listAllResources" resultMap="ResourceBaseResultMap">
+        SELECT
+        <include refid="Resource_Base_Column_List"/>
+        FROM resource
+    </select>
+
+    <select id="getRoleById" resultMap="RoleBaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Role_Base_Column_List"/>
+        FROM role
+        where id=#{id, jdbcType=INTEGER};
+    </select>
+
+    <select id="getPermissionById" resultMap="PermissionBaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Permission_Base_Column_List"/>
+        FROM permission
+        where id=#{id, jdbcType=INTEGER};
+    </select>
+
+    <select id="getResourceById" resultMap="ResourceBaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Resource_Base_Column_List"/>
+        FROM resource
+        where id=#{id, jdbcType=INTEGER};
+    </select>
+
+
+    <delete id="deleteRoleByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from role
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deletePermissionByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from permission
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deleteResourceByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from resource
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insertRole" parameterType="com.springforum.domain.Role" >
+        insert into role (role, description)
+        values (#{role,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertPermission" parameterType="com.springforum.domain.Permission" >
+        insert into permission (permission, description)
+        values (#{permission,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertResource" parameterType="com.springforum.domain.Resource" >
+        insert into resource (resource, description)
+        values (#{resource,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateRole" parameterType="com.springforum.domain.Role" >
+        update role
+        <set>
+            <if test="role != null" >
+                role = #{role, jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id, jdbcType=INTEGER}
+    </update>
+    <update id="updatePermission" parameterType="com.springforum.domain.Permission" >
+        update permission
+        <set>
+            <if test="permission != null" >
+                permission = #{permission, jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id, jdbcType=INTEGER}
+    </update>
+    <update id="updateResource" parameterType="com.springforum.domain.Resource" >
+        update resource
+        <set>
+            <if test="resource != null" >
+                resource = #{resource, jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id, jdbcType=INTEGER}
+    </update>
+    <select id="selectPermissionByRole" resultMap="PermissionBaseResultMap" parameterType="java.lang.Integer">
+        select
+        permission.id, permission.permission, permission.description
+        from permission, role_permission
+        where role_id=#{roleId, jdbcType=INTEGER} and role_id=role_permission.role_id and permission.id=role_permission.permission_id;
+    </select>
+    <insert id="insertRolePermission">
+        insert into role_permission (role_id, permission_id) values (#{roleId, jdbcType=INTEGER}, #{permissionId, jdbcType=INTEGER})
+    </insert>
+    <delete id="deleteRolePermission">
+        delete from role_permission
+        where role_id = #{roleId ,jdbcType=INTEGER} and permission_id=#{permissionId, jdbcType=INTEGER}
+    </delete>
+    <select id="selectResourceByPermission" resultMap="ResourceBaseResultMap" parameterType="java.lang.Integer">
+        select
+        resource.id, resource.resource, resource.description
+        from resource, permission_resource
+        where permission_id=#{permissionId, jdbcType=INTEGER} and permission_id=permission_resource.permission_id and resource.id=permission_resource.resource_id
+    </select>
+    <insert id="insertPermissionResource">
+        insert into permission_resource (permission_id, resource_id) values (#{permissionId, jdbcType=INTEGER}, #{resourceId, jdbcType=INTEGER})
+    </insert>
+    <delete id="deletePermissionResource">
+        delete from permission_resource
+        where permission_id = #{permissionId, jdbcType=INTEGER} and resource_id=#{resourceId, jdbcType=INTEGER}
+    </delete>
+    <select id="selectUserResources" resultMap="ResourceBaseResultMap" parameterType="java.lang.Integer">
+
+        select
+        resource.id, resource.resource, resource.description
+        from resource
+        where resource.id in (
+            select resource_id
+            from permission_resource
+            where permission_resource.permission_id in (
+                select permission_id
+                from role_permission
+                where role_id in (
+                    select role_id
+                    from user
+                    where user.id = #{id, jdbcType=INTEGER}
+                )
+            )
+        )
+    </select>
+</mapper>
