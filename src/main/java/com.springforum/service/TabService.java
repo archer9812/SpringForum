@@ -1,6 +1,6 @@
-package com.hasaki.service;
+package com.springforum.service;
 
-import com.hasaki.domain.Tab;
+import com.springforum.domain.Tab;
 
 import java.util.List;
 
