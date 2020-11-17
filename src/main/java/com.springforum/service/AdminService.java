@@ -1,8 +1,8 @@
-package com.hasaki.service;
+package com.springforum.service;
 
-import com.hasaki.domain.Permission;
-import com.hasaki.domain.Resource;
-import com.hasaki.domain.Role;
+import com.springforum.domain.Permission;
+import com.springforum.domain.Resource;
+import com.springforum.domain.Role;
 
 import java.util.List;
 
