@@ -1,6 +1,6 @@
-package com.hasaki.service;
+package com.springforum.service;
 
-import com.hasaki.domain.User;
+import com.springforum.domain.User;
 
 import java.util.List;
 
